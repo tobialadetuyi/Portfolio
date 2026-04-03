@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain Controller Compromised — Full VAPT Case Study | Oluwatobi Aladetuyi</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b0f;
+    --surface: #0f1318;
+    --surface2: #161b22;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --red: #f85149;
+    --amber: #e3b341;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* grid bg pattern */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header { padding: 52px 0 40px; border-bottom: 1px solid var(--border); }
+
+  .breadcrumb {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 6px;
+  }
+  .breadcrumb span { color: var(--red); }
+
+  .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    padding: 3px 10px; border-radius: 3px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .t-red   { background: rgba(248,81,73,0.12);  color: var(--red);    border: 1px solid rgba(248,81,73,0.25); }
+  .t-amber { background: rgba(227,179,65,0.1);  color: var(--amber);  border: 1px solid rgba(227,179,65,0.2); }
+  .t-blue  { background: rgba(88,166,255,0.1);  color: var(--blue);   border: 1px solid rgba(88,166,255,0.2); }
+  .t-purple{ background: rgba(188,140,255,0.1); color: var(--purple); border: 1px solid rgba(188,140,255,0.2); }
+  .t-green { background: rgba(63,185,80,0.1);   color: var(--green);  border: 1px solid rgba(63,185,80,0.2); }
+
+  h1 {
+    font-size: clamp(24px, 5vw, 40px); font-weight: 700;
+    line-height: 1.15; letter-spacing: -0.025em; color: #fff;
+    margin-bottom: 14px;
+  }
+  h1 em { color: var(--red); font-style: normal; }
+
+  .subtitle { font-size: 15px; color: var(--muted); max-width: 580px; line-height: 1.65; font-weight: 400; }
+
+  .meta-row {
+    display: flex; gap: 28px; flex-wrap: wrap;
+    padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border);
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .meta-val { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* ── SCORE BANNER ── */
+  .score-banner {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1px; background: var(--border); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin: 36px 0;
+  }
+  .score-cell { background: var(--surface); padding: 18px 16px; text-align: center; }
+  .score-num { font-family: var(--mono); font-size: 26px; font-weight: 500; line-height: 1; }
+  .score-desc { font-size: 10px; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.07em; }
+  .c-red { color: var(--red); } .c-amber { color: var(--amber); }
+  .c-green { color: var(--green); } .c-blue { color: var(--blue); }
+  .c-white { color: #fff; } .c-purple { color: var(--purple); }
+
+  /* ── SECTION ── */
+  section { padding: 40px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+
+  h2 {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.14em;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 22px;
+  }
+  h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+
+  p { color: #8b949e; line-height: 1.75; margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── CRITICAL BANNER ── */
+  .crit-banner {
+    background: rgba(248,81,73,0.07); border: 1px solid rgba(248,81,73,0.25);
+    border-left: 3px solid var(--red); border-radius: 6px;
+    padding: 18px 20px; margin-bottom: 28px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .crit-icon {
+    font-family: var(--mono); font-size: 11px; color: var(--red);
+    background: rgba(248,81,73,0.12); padding: 4px 8px;
+    border-radius: 3px; white-space: nowrap; margin-top: 2px; flex-shrink: 0;
+  }
+  .crit-text { font-size: 13px; color: #c9d1d9; line-height: 1.6; }
+  .crit-text strong { color: var(--red); font-weight: 600; }
+
+  /* ── FINDING CARDS ── */
+  .findings { display: flex; flex-direction: column; gap: 14px; }
+  .finding {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+    animation: fadeUp 0.35s ease both;
+  }
+  .finding:nth-child(1){animation-delay:.05s}
+  .finding:nth-child(2){animation-delay:.1s}
+  .finding:nth-child(3){animation-delay:.15s}
+  .finding:nth-child(4){animation-delay:.2s}
+  .finding:nth-child(5){animation-delay:.25s}
+  .finding:hover { border-color: var(--border2); }
+
+  .finding-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+  }
+  .sev {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 3px; text-transform: uppercase;
+    letter-spacing: 0.05em; white-space: nowrap;
+  }
+  .sev-crit { background: rgba(248,81,73,0.15); color: var(--red); }
+  .sev-high { background: rgba(248,81,73,0.1); color: #ff7b72; }
+  .sev-med  { background: rgba(227,179,65,0.12); color: var(--amber); }
+  .sev-low  { background: rgba(63,185,80,0.1); color: var(--green); }
+
+  .finding-title { font-size: 13px; font-weight: 600; color: #e6edf3; flex: 1; }
+  .cvss { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  .finding-body { padding: 16px 18px; }
+  .finding-body p { font-size: 13px; margin-bottom: 12px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; }
+  @media(max-width:520px){ .two-col { grid-template-columns: 1fr; } }
+  .col-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+  .col-val { font-size: 12px; color: #8b949e; line-height: 1.65; }
+
+  /* ── TERMINAL ── */
+  .terminal {
+    background: #010409; border: 1px solid rgba(88,166,255,0.12);
+    border-radius: 6px; padding: 16px 18px; margin: 14px 0;
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.9;
+    overflow-x: auto;
+  }
+  .t-prompt { color: var(--green); }
+  .t-cmd { color: var(--blue); }
+  .t-key { color: var(--purple); }
+  .t-val { color: var(--amber); }
+  .t-str { color: var(--green); }
+  .t-warn { color: var(--red); }
+  .t-dim { color: #484f58; }
+  .t-line { display: block; }
+
+  /* ── ATTACK CHAIN ── */
+  .chain { display: flex; flex-direction: column; }
+  .chain-step { display: flex; align-items: flex-start; gap: 14px; }
+  .chain-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .chain-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+  }
+  .chain-line { width: 1px; flex: 1; min-height: 28px; margin: 4px 0; background: var(--border); }
+  .chain-step:last-child .chain-line { display: none; }
+  .chain-content { padding: 2px 0 26px; }
+  .chain-content h4 { font-size: 13px; font-weight: 600; color: #e6edf3; margin-bottom: 3px; }
+  .chain-content p { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+  /* ── TARGETS TABLE ── */
+  .target-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .target-row {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .target-name { font-family: var(--mono); font-size: 12px; color: var(--blue); flex: 1; min-width: 180px; }
+  .target-counts { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tcount {
+    font-family: var(--mono); font-size: 11px; padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .tc-red   { background: rgba(248,81,73,0.1); color: var(--red); }
+  .tc-amber { background: rgba(227,179,65,0.1); color: var(--amber); }
+  .tc-green { background: rgba(63,185,80,0.1); color: var(--green); }
+  .tc-dim   { background: var(--surface2); color: var(--muted); }
+
+  /* ── TOOLS ── */
+  .tools-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .tool { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+  /* ── REMED ── */
+  .remed-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .remed-list li { display: flex; gap: 10px; font-size: 13px; color: #8b949e; line-height: 1.6; align-items: flex-start; }
+  .remed-list li::before { content: '→'; color: var(--green); font-family: var(--mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+
+  /* ── OUTCOME ── */
+  .outcome {
+    background: linear-gradient(135deg, rgba(63,185,80,0.06), rgba(63,185,80,0.02));
+    border: 1px solid rgba(63,185,80,0.2); border-radius: 8px;
+    padding: 22px 24px; margin-top: 20px;
+  }
+  .outcome h3 { color: var(--green); font-size: 14px; margin-bottom: 10px; }
+  .outcome p { font-size: 13px; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 28px 0; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-author { font-size: 13px; color: var(--muted); }
+  .footer-author strong { color: var(--text); }
+  .redacted-tag {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 3px; padding: 4px 10px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  header { animation: fadeUp 0.5s ease both; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="breadcrumb">pentest / infrastructure / active-directory / <span>full-compromise</span></div>
+    <div class="tag-row">
+      <span class="tag t-red">Domain Controller Compromised</span>
+      <span class="tag t-amber">CVE-2020-1472 · Zerologon</span>
+      <span class="tag t-blue">Web App · Network · AD</span>
+      <span class="tag t-purple">7 Targets · Active + Passive</span>
+      <span class="tag t-green">Authorised Engagement</span>
+    </div>
+    <h1>Full Domain Compromise via <em>Zerologon</em><br>— Investment Firm VAPT</h1>
+    <p class="subtitle">
+      An authorised penetration test and vulnerability assessment across servers, networks, web applications, and cloud assets — culminating in SYSTEM-level domain controller access via CVE-2020-1472.
+    </p>
+    <div class="meta-row">
+      <div class="meta-item">
+        <span class="meta-label">Engagement type</span>
+        <span class="meta-val">VAPT — Active & Passive</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Scope</span>
+        <span class="meta-val">7 targets (DC, Web, Cloud, ERP)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">DC OS</span>
+        <span class="meta-val">Windows Server 2019 (Build 17763)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Overall risk</span>
+        <span class="meta-val" style="color:var(--red)">CRITICAL</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- SCORE SUMMARY -->
+  <div class="score-banner">
+    <div class="score-cell">
+      <div class="score-num c-red">4</div>
+      <div class="score-desc">High (Active)</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-num c-amber">4</div>
+      <div class="score-desc">Medium (Active)</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-num c-green">2</div>
+      <div class="score-desc">Low (Active)</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-num c-amber">51</div>
+      <div class="score-desc">Medium (Passive)</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-num c-blue">91</div>
+      <div class="score-desc">Low (Passive)</div>
+    </div>
+    <div class="score-cell">
+      <div class="score-num c-white">7</div>
+      <div class="score-desc">Targets scanned</div>
+    </div>
+  </div>
+
+  <!-- CRITICAL ALERT -->
+  <div class="crit-banner">
+    <span class="crit-icon">!! CRITICAL</span>
+    <div class="crit-text">
+      <strong>Full domain compromise achieved.</strong> The SAGE$ machine account was exploited via Zerologon (CVE-2020-1472), resetting the DC password to blank. Administrator NTLM hash dumped. <strong>SYSTEM-level shell obtained</strong> — all domain resources, user credentials, and connected systems considered fully compromised.
+    </div>
+  </div>
+
+  <!-- SCOPE -->
+  <section>
+    <h2>Scope & methodology</h2>
+    <p>
+      A combined active penetration test and passive vulnerability assessment was conducted across an investment firm's on-premises infrastructure, public-facing web properties, and cloud-hosted platforms. Active testing involved real exploitation attempts using industry-standard offensive tooling. Passive assessment covered seven distinct targets using automated scanning without direct exploitation.
+    </p>
+    <div class="tools-row">
+      <span class="tool">CrackMapExec</span>
+      <span class="tool">Nmap</span>
+      <span class="tool">Nessus</span>
+      <span class="tool">secretsdump.py</span>
+      <span class="tool">psexec.py</span>
+      <span class="tool">PetitPotam</span>
+      <span class="tool">PrintNightmare</span>
+      <span class="tool">Zerologon PoC</span>
+      <span class="tool">smbclient</span>
+      <span class="tool">xfreerdp</span>
+      <span class="tool">openssl</span>
+      <span class="tool">Burp Suite</span>
+    </div>
+  </section>
+
+  <!-- KEY FINDINGS -->
+  <section>
+    <h2>Key findings — active pentest</h2>
+    <div class="findings">
+
+      <!-- FINDING 1: ZEROLOGON -->
+      <div class="finding">
+        <div class="finding-header">
+          <span class="sev sev-crit">Critical</span>
+          <span class="finding-title">Domain Controller fully compromised — Zerologon CVE-2020-1472</span>
+          <span class="cvss">CVSS 10.0</span>
+        </div>
+        <div class="finding-body">
+          <p>
+            The SAGE$ machine account (Domain Controller) was vulnerable to Zerologon — a cryptographic flaw in the Netlogon protocol allowing an unauthenticated attacker to reset the DC machine account password to blank, then authenticate as the DC itself. Full domain dominance was achieved in a single exploit chain.
+          </p>
+          <div class="terminal">
+            <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">python3 zerologon_tester.py SAGE 192.168.0.15</span></span>
+            <span class="t-line"><span class="t-dim">[*] Performing authentication attempts...</span></span>
+            <span class="t-line"><span class="t-warn">[+] Success! DC is vulnerable to Zerologon.</span></span>
+            <span class="t-line">&nbsp;</span>
+            <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">secretsdump.py -just-dc [REDACTED]/SAGE\<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="163256272f243827202e3826382723">[email&#160;protected]</a> -no-pass</span></span>
+            <span class="t-line"><span class="t-dim">[*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)</span></span>
+            <span class="t-line"><span class="t-key">Administrator</span>:<span class="t-val">500</span>:<span class="t-dim">aad3b435b51404eeaad3b435b51404ee</span>:<span class="t-warn">31d6cfe0d16ae931b73c59d7e0c089c0</span></span>
+            <span class="t-line"><span class="t-dim">[*] NTLM hash confirmed — blank password (31d6cfe0...)</span></span>
+            <span class="t-line">&nbsp;</span>
+            <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">psexec.py -hashes :[REDACTED_HASH] [REDACTED]/<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f7b6939a9e999e84838596839885b7c6cec5d9c6c1cfd9c7d9c6c2">[email&#160;protected]</a></span></span>
+            <span class="t-line"><span class="t-warn">[+] SYSTEM shell obtained on Domain Controller</span></span>
+          </div>
+          <div class="two-col">
+            <div>
+              <div class="col-label">Business impact</div>
+              <div class="col-val">All domain credentials exposed · Full AD takeover · Connected systems compromised · Ransomware deployment possible · Regulatory breach (NDPR)</div>
+            </div>
+            <div>
+              <div class="col-label">OWASP / CVE reference</div>
+              <div class="col-val">CVE-2020-1472 · CVSS 10.0 · Patch: KB4570334 · MITRE T1210 (Exploitation of Remote Services)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINDING 2: WinRM -->
+      <div class="finding">
+        <div class="finding-header">
+          <span class="sev sev-high">High</span>
+          <span class="finding-title">WinRM exposed on port 5985 — brute-forced with 7M+ passwords</span>
+          <span class="cvss">CVSS 7.5</span>
+        </div>
+        <div class="finding-body">
+          <p>Windows Remote Management was accessible externally on port 5985 using unencrypted HTTP. Brute-force testing was conducted via CrackMapExec across a large credential list, confirming the attack surface for remote command execution without requiring physical access.</p>
+          <div class="terminal">
+            <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">crackmapexec winrm 192.168.0.15 -u users.txt -p rockyou.txt</span></span>
+            <span class="t-line"><span class="t-dim">[*] 192.168.0.15:5985  WINRM  — Testing credentials...</span></span>
+            <span class="t-line"><span class="t-warn">[+] Port 5985/tcp OPEN — WinRM accessible (HTTP, no TLS)</span></span>
+          </div>
+          <div class="two-col">
+            <div>
+              <div class="col-label">Impact</div>
+              <div class="col-val">Remote command execution · Lateral movement · Credential interception (HTTP, unencrypted)</div>
+            </div>
+            <div>
+              <div class="col-label">Remediation</div>
+              <div class="col-val">Disable HTTP listener (5985) · Enable HTTPS (5986) · Restrict to admin jump hosts via firewall</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINDING 3: WordPress Admin -->
+      <div class="finding">
+        <div class="finding-header">
+          <span class="sev sev-high">High</span>
+          <span class="finding-title">WordPress admin panel publicly accessible — no access controls</span>
+          <span class="cvss">CVSS 7.5</span>
+        </div>
+        <div class="finding-body">
+          <p>The /wp-admin/ and /wp-login.php pages returned HTTP 200 with no IP restriction, rate limiting, or MFA. The XML-RPC endpoint (/xmlrpc.php) was also active — enabling brute-force amplification via system.multicall and potential DDoS via pingback abuse.</p>
+          <div class="two-col">
+            <div>
+              <div class="col-label">Impact</div>
+              <div class="col-val">OWASP A01:2021 — Broken Access Control · Credential stuffing · Plugin exploit path · CMS takeover</div>
+            </div>
+            <div>
+              <div class="col-label">Remediation</div>
+              <div class="col-val">IP whitelist /wp-admin/ · Enforce MFA · Disable xmlrpc.php · Enable login attempt limiting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINDING 4: TLS Expired -->
+      <div class="finding">
+        <div class="finding-header">
+          <span class="sev sev-high">High</span>
+          <span class="finding-title">TLS certificate expired — HTTPS outage risk for public domain</span>
+          <span class="cvss">CVSS 7.5</span>
+        </div>
+        <div class="finding-body">
+          <p>SSL certificate verification confirmed an expiry of November 11, 2025. Post-expiry, HTTPS connections would fail across all browsers, making the investment platform completely inaccessible via secure connection and triggering client-side security warnings.</p>
+          <div class="terminal">
+            <span class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">openssl s_client -connect [REDACTED-DOMAIN]:443 -servername [REDACTED-DOMAIN]</span></span>
+            <span class="t-line"><span class="t-key">Not Before:</span> <span class="t-str">Dec 18, 2024</span></span>
+            <span class="t-line"><span class="t-key">Not After :</span> <span class="t-warn">Nov 11, 2025  ← EXPIRED</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINDING 5: No SMB Signing -->
+      <div class="finding">
+        <div class="finding-header">
+          <span class="sev sev-med">Medium</span>
+          <span class="finding-title">SMB signing disabled — NTLM relay attack path confirmed</span>
+          <span class="cvss">CVSS 5.3</span>
+        </div>
+        <div class="finding-body">
+          <p>SMB signing was not enforced on the domain controller (192.168.0.15). With SMB signing disabled, an attacker positioned on the network can intercept and relay NTLM authentication, escalating privileges without needing plaintext credentials — chaining directly with the Zerologon finding.</p>
+          <div class="two-col">
+            <div>
+              <div class="col-label">Impact</div>
+              <div class="col-val">NTLM relay · SMB man-in-the-middle · Session hijacking · Privilege escalation without credentials</div>
+            </div>
+            <div>
+              <div class="col-label">Remediation</div>
+              <div class="col-val">Enforce SMB signing via Group Policy · Prefer Kerberos over NTLM · Restrict SMB to trusted hosts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ATTACK CHAIN -->
+  <section>
+    <h2>Attack chain — initial access to full domain compromise</h2>
+    <div class="chain">
+      <div class="chain-step">
+        <div class="chain-left">
+          <div class="chain-num" style="background:rgba(248,81,73,0.12);color:var(--red);">01</div>
+          <div class="chain-line"></div>
+        </div>
+        <div class="chain-content">
+          <h4>Reconnaissance & enumeration</h4>
+          <p>Nmap + CrackMapExec used to enumerate live hosts, open ports (445/SMB, 5985/WinRM, 3389/RDP), OS fingerprint (Windows Server 2019), and domain membership. User accounts discovered via smbclient share enumeration.</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-left">
+          <div class="chain-num" style="background:rgba(248,81,73,0.1);color:#ff7b72;">02</div>
+          <div class="chain-line"></div>
+        </div>
+        <div class="chain-content">
+          <h4>Zerologon exploit — DC machine account reset</h4>
+          <p>CVE-2020-1472 exploited against the SAGE$ Domain Controller. The Netlogon authentication flaw allowed the machine account password to be reset to blank with zero credentials required — no prior foothold needed.</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-left">
+          <div class="chain-num" style="background:rgba(227,179,65,0.1);color:var(--amber);">03</div>
+          <div class="chain-line"></div>
+        </div>
+        <div class="chain-content">
+          <h4>Credential access — NTLM hash dump</h4>
+          <p>Authenticated to the DC using the compromised SAGE$ account. secretsdump.py extracted the Administrator NTLM hash, confirming the blank password exploitation was successful and that all domain credentials are accessible.</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-left">
+          <div class="chain-num" style="background:rgba(227,179,65,0.1);color:var(--amber);">04</div>
+          <div class="chain-line"></div>
+        </div>
+        <div class="chain-content">
+          <h4>Pass-the-hash — SYSTEM shell obtained</h4>
+          <p>psexec.py used to authenticate with the dumped NTLM hash, obtaining an interactive SYSTEM-level shell on the Domain Controller. Full domain dominance confirmed — all AD objects, GPOs, and connected resources under attacker control.</p>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-left">
+          <div class="chain-num" style="background:rgba(63,185,80,0.1);color:var(--green);">05</div>
+        </div>
+        <div class="chain-content">
+          <h4>Findings documented — remediation handed to client</h4>
+          <p>All exploitation evidence captured with live terminal output. CVSS-scored report with immediate, short-term, and long-term remediation roadmap delivered in executive and technical formats.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASSIVE SCAN TARGETS -->
+  <section>
+    <h2>Passive scan — 7 targets assessed</h2>
+    <p>Automated vulnerability scanning was performed across the full asset estate including the primary domain, ERP system, SharePoint, HR platform, Power Apps, Dynamics CRM, and learning portal.</p>
+    <div class="target-grid">
+      <div class="target-row">
+        <span class="target-name">[REDACTED]-investment.com.ng</span>
+        <div class="target-counts">
+          <span class="tcount tc-red">1 High</span>
+          <span class="tcount tc-amber">5 Medium</span>
+          <span class="tcount tc-green">6 Low</span>
+        </div>
+      </div>
+      <div class="target-row">
+        <span class="target-name">Sage ERP (129.x.x.x)</span>
+        <div class="target-counts">
+          <span class="tcount tc-dim">0 High</span>
+          <span class="tcount tc-amber">3 Medium</span>
+          <span class="tcount tc-green">9 Low</span>
+        </div>
+      </div>
+      <div class="target-row">
+        <span class="target-name">SharePoint (cloud)</span>
+        <div class="target-counts">
+          <span class="tcount tc-dim">0 High</span>
+          <span class="tcount tc-amber">10 Medium</span>
+          <span class="tcount tc-green">13 Low</span>
+        </div>
+      </div>
+      <div class="target-row">
+        <span class="target-name">HR Platform (oicl.seamlesshrms)</span>
+        <div class="target-counts">
+          <span class="tcount tc-dim">0 High</span>
+          <span class="tcount tc-amber">5 Medium</span>
+          <span class="tcount tc-green">7 Low</span>
+        </div>
+      </div>
+      <div class="target-row">
+        <span class="target-name">Power Apps (apps.powerapps.com)</span>
+        <div class="target-counts">
+          <span class="tcount tc-dim">0 High</span>
+          <span class="tcount tc-amber">10 Medium</span>
+          <span class="tcount tc-green">12 Low</span>
+        </div>
+      </div>
+      <div class="target-row">
+        <span class="target-name">Dynamics CRM (crm4.dynamics.com)</span>
+        <div class="target-counts">
+          <span class="tcount tc-dim">0 High</span>
+          <span class="tcount tc-amber">9 Medium</span>
+          <span class="tcount tc-green">12 Low</span>
+        </div>
+      </div>
+      <div class="target-row">
+        <span class="target-name">Learning Portal (percipio.com)</span>
+        <div class="target-counts">
+          <span class="tcount tc-dim">0 High</span>
+          <span class="tcount tc-amber">9 Medium</span>
+          <span class="tcount tc-green">11 Low</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:14px;font-size:12px;">Common findings across passive targets: missing CSP headers · CORS misconfiguration · absent DMARC/DKIM · cookies without HttpOnly/Secure flags · technology stack disclosure · outdated JavaScript libraries · missing HSTS</p>
+  </section>
+
+  <!-- REMEDIATION -->
+  <section>
+    <h2>Remediation roadmap</h2>
+    <h3 style="font-size:14px;color:var(--red);margin-bottom:10px;">Immediate (0–24 hours)</h3>
+    <ul class="remed-list">
+      <li>Isolate the Domain Controller from the network and apply patch KB4570334 to close the Zerologon vulnerability</li>
+      <li>Emergency reset of all privileged domain accounts (Domain Admins, Enterprise Admins, service accounts)</li>
+      <li>Disable WinRM HTTP listener (port 5985); restrict remote management to TLS-encrypted channels only</li>
+    </ul>
+    <h3 style="font-size:14px;color:var(--amber);margin-top:20px;margin-bottom:10px;">Short-term (1–7 days)</h3>
+    <ul class="remed-list">
+      <li>Rebuild or restore the Domain Controller from a known-clean backup — assume full compromise of the existing instance</li>
+      <li>Enable SMB signing via Group Policy across all domain-joined systems to prevent NTLM relay attacks</li>
+      <li>Implement Local Administrator Password Solution (LAPS) to randomise and rotate local admin credentials</li>
+      <li>Restrict /wp-admin/ and /wp-login.php via IP whitelist; enforce MFA; disable xmlrpc.php</li>
+      <li>Renew TLS certificate and enable auto-renewal; configure HSTS across all web properties</li>
+    </ul>
+    <h3 style="font-size:14px;color:var(--blue);margin-top:20px;margin-bottom:10px;">Long-term security measures</h3>
+    <ul class="remed-list">
+      <li>Deploy Privileged Access Workstations (PAWs) for all administrative tasks to reduce lateral movement risk</li>
+      <li>Implement Microsoft Defender for Identity to detect Zerologon-style attacks and anomalous DC authentication</li>
+      <li>Publish DMARC (p=reject), DKIM, and validate SPF across all sending domains to prevent email spoofing</li>
+      <li>Conduct red team exercises simulating machine account attacks and NTLM relay chains annually</li>
+    </ul>
+
+    <div class="outcome">
+      <h3>Engagement outcome</h3>
+      <p>Findings delivered in dual-format reports — an executive brief for board-level risk sign-off, and a technical report with CVSS scores, CVE references, MITRE ATT&CK mapping, and developer-ready remediation steps.</p>
+      <p style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--green);">→ Engagement conducted under formal authorisation · All systems restored post-testing · NDA in effect</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-author">
+      <strong>Oluwatobi Aladetuyi</strong> — Penetration Tester & Vulne

