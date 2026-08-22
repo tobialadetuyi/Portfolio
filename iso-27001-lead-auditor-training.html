@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 27001:2022 Lead Auditor Training — Kropmann & Seamless Technologies</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #080b0f;
+            --surface: #0f1318;
+            --surface2: #161b22;
+            --border: rgba(255,255,255,0.07);
+            --border2: rgba(255,255,255,0.13);
+            --red: #f85149;
+            --amber: #e3b341;
+            --green: #3fb950;
+            --blue: #58a6ff;
+            --purple: #bc8cff;
+            --text: #e6edf3;
+            --muted: #7d8590;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Space Grotesk', sans-serif;
+        }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: var(--sans); font-size: 15px;
+            line-height: 1.7; min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none;
+        }
+        .wrap { max-width: 820px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        
+        header { padding: 48px 0 32px; border-bottom: 1px solid var(--border); }
+        .breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+        .breadcrumb a { color: var(--blue); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-size: 38px; font-weight: 700; letter-spacing: -0.03em; color: #fff; line-height: 1.15; margin-bottom: 16px; }
+        .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+        
+        .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+        .meta-item { }
+        .meta-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .meta-value { font-size: 14px; font-weight: 500; color: var(--text); }
+        .badge { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 4px; background: rgba(63,185,80,0.1); color: var(--green); border: 1px solid rgba(63,185,80,0.2); margin-top: 8px; }
+        
+        .section { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+        .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+        .section-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+        .section-desc { color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
+        
+        .highlight-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+        .highlight-box h4 { font-size: 14px; font-weight: 600; color: var(--blue); margin-bottom: 12px; font-family: var(--mono); }
+        .highlight-box p, .highlight-box li { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
+        .highlight-box ul { margin-left: 20px; }
+        .highlight-box li { margin-bottom: 8px; }
+        
+        .table-wrapper { overflow-x: auto; margin: 16px 0; }
+        .styled-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .styled-table th { background: var(--surface2); padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text); }
+        .styled-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--muted); }
+        .styled-table tr:last-child td { border-bottom: none; }
+        
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 24px 0; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .stat-num { font-size: 28px; font-weight: 700; color: var(--blue); line-height: 1; margin-bottom: 4px; }
+        .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+        
+        .three-col-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 20px 0; }
+        .col-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .col-item h5 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+        .col-item p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+        
+        .day-block { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+        .day-block h4 { font-size: 14px; font-weight: 600; color: var(--blue); margin-bottom: 12px; }
+        .day-block p, .day-block li { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
+        .day-block ul { margin-left: 20px; }
+        .day-block li { margin-bottom: 8px; }
+        
+        .key-points { background: rgba(63,185,80,0.08); border-left: 3px solid var(--green); padding: 14px 16px; margin: 12px 0; border-radius: 4px; }
+        .key-points strong { color: var(--green); }
+        
+        .risk-level { font-family: var(--mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 3px; display: inline-block; }
+        .risk-low { background: rgba(63,185,80,0.15); color: var(--green); }
+        .risk-medium { background: rgba(227,179,65,0.15); color: var(--amber); }
+        .risk-high { background: rgba(248,81,73,0.15); color: var(--red); }
+        .risk-critical { background: rgba(248,81,73,0.2); color: #ff6b6b; }
+        
+        footer { padding: 48px 0; margin-top: 48px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 12px; }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        strong { color: var(--text); }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    
+    <header>
+        <div class="breadcrumb"><a href="index.html">← Back to portfolio</a></div>
+        <h1>ISO 27001:2022 Lead Auditor Training</h1>
+        <p class="subtitle">Intensive 3-Day Engagement: Kropmann & Seamless Technologies</p>
+        
+        <div class="meta-grid">
+            <div class="meta-item">
+                <div class="meta-label">Duration</div>
+                <div class="meta-value">3 Days (18 Hours)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Format</div>
+                <div class="meta-value">Classroom Intensive</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Participants</div>
+                <div class="meta-value">4 Professionals</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Focus</div>
+                <div class="meta-value"><span class="badge">Competence-Based</span></div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="section">
+        <div class="section-title">Engagement Overview</div>
+        <p class="section-desc">A practical, intensive 3-day Lead Auditor training programme designed to build real competence in ISO 27001:2022 and ISO 19011:2018 within the specific operational context of two African technology organisations.</p>
+        
+        <div class="highlight-box">
+            <h4>Participating Organisations</h4>
+            <ul>
+                <li><strong>Kropmann:</strong> Technology and cybersecurity solutions provider delivering cloud, infrastructure, automation, GRC and managed security services across Africa</li>
+                <li><strong>Seamless Technologies:</strong> Workforce management SaaS platform processing sensitive HR and payroll data, expanding into AI and embedded finance</li>
+            </ul>
+            <p style="margin-top: 12px; font-size: 12px; color: var(--muted);">Training deliberately contextualised around their operational realities: multi-country delivery, cloud boundaries, privileged access management, AI/data flows, and regulatory compliance (NDPR, etc.)</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Training Structure & Delivery Model</div>
+        
+        <div class="table-wrapper">
+            <table class="styled-table">
+                <tr>
+                    <th>Element</th>
+                    <th>Details</th>
+                </tr>
+                <tr>
+                    <td><strong>Format</strong></td>
+                    <td>Classroom (in-person), highly interactive</td>
+                </tr>
+                <tr>
+                    <td><strong>Duration</strong></td>
+                    <td>3 days × 6 hours = 18 contact hours</td>
+                </tr>
+                <tr>
+                    <td><strong>Group Size</strong></td>
+                    <td>4 participants (optimal for deep coaching and role-play)</td>
+                </tr>
+                <tr>
+                    <td><strong>Delivery Style</strong></td>
+                    <td>40% concept delivery + 60% practical application</td>
+                </tr>
+                <tr>
+                    <td><strong>Assessment</strong></td>
+                    <td>Continuous (participation, exercises, role-plays, knowledge checks)</td>
+                </tr>
+                <tr>
+                    <td><strong>Outcome Focus</strong></td>
+                    <td>Competence-based learning + formal examination preparation</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Core Standards & Content Coverage</div>
+        
+        <div class="three-col-grid">
+            <div class="col-item">
+                <h5>ISO/IEC 27001:2022</h5>
+                <p>Clauses 4–10 (Context through Improvement). Risk-based thinking, PDCA cycle, Statement of Applicability, 93 Annex A controls (Organizational, People, Physical, Technological). Conformity vs. effectiveness.</p>
+            </div>
+            <div class="col-item">
+                <h5>ISO 19011:2018</h5>
+                <p>Seven audit principles, managing an audit programme (Clause 5), conducting an audit (Clause 6), auditor competence (Clause 7). Stage 1 vs Stage 2 audits, evidence-based and risk-based auditing.</p>
+            </div>
+            <div class="col-item">
+                <h5>Lead Auditor Skills</h5>
+                <p>Opening/closing meetings, interview technique, evidence gathering, writing clear nonconformities (Criteria–Finding–Evidence), leading an audit team, follow-up and corrective action verification.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Day-by-Day Curriculum</div>
+        
+        <div class="day-block">
+            <h4>Day 1 – ISMS Foundations & Audit Perspective</h4>
+            <p><strong>Focus:</strong> Understanding ISO 27001 from an auditor's viewpoint</p>
+            <ul>
+                <li>Structure of ISO 27001 and clause interpretation</li>
+                <li>ISMS scope definition exercise (multi-country, cloud boundaries)</li>
+                <li>Risk assessment methodology and treatment decisions</li>
+                <li>Statement of Applicability (SoA) development</li>
+                <li>Conformity vs. effectiveness in ISMS design</li>
+                <li>Case study: Defining ISMS scope for a SaaS platform with multi-cloud hosting</li>
+            </ul>
+        </div>
+        
+        <div class="day-block">
+            <h4>Day 2 – Audit Principles & Planning (ISO 19011)</h4>
+            <p><strong>Focus:</strong> Planning and preparing for effective audits</p>
+            <ul>
+                <li>Seven principles of auditing applied in practice</li>
+                <li>Managing an audit programme (strategic overview)</li>
+                <li>Stage 1 audit: Document review and preliminary controls testing</li>
+                <li>Risk-based Stage 2 audit planning with realistic checklists</li>
+                <li>Auditor team composition and assignment</li>
+                <li>Exercise: Build a Stage 2 audit plan for a managed security services provider</li>
+            </ul>
+        </div>
+        
+        <div class="day-block">
+            <h4>Day 3 – Conducting Audits & Writing Findings</h4>
+            <p><strong>Focus:</strong> Practical execution and reporting (most hands-on day)</p>
+            <ul>
+                <li>Three structured interview simulations with role rotation:</li>
+                <li style="margin-left: 20px;">• Scenario 1: Access Control & Privileged Account Management (A.8.2, A.5.18)</li>
+                <li style="margin-left: 20px;">• Scenario 2: Secure Development & AI Feature Release (A.8.25–A.8.32)</li>
+                <li style="margin-left: 20px;">• Scenario 3: Incident Management & Customer Notification (A.5.24–A.5.28)</li>
+                <li>Writing clear nonconformities (Major vs. Minor)</li>
+                <li>Opening and closing meeting facilitation</li>
+                <li>Specimen audit report review with findings, risk scoring, executive summary</li>
+                <li>Corrective action tracking and follow-up verification</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Use Cases & Master Case Study: "Nexus Africa Technologies"</div>
+        <p class="section-desc">Rather than generic examples, all training scenarios were built around a blended fictional organisation combining:</p>
+        
+        <div class="highlight-box">
+            <ul>
+                <li><strong>Multi-tenant SaaS Platform:</strong> Workforce/HR management (mirroring Seamless Technologies)</li>
+                <li><strong>Cybersecurity & MSS:</strong> Managed security services delivery (mirroring Kropmann)</li>
+                <li><strong>Multi-cloud Hosting:</strong> Azure and AWS shared responsibility model</li>
+                <li><strong>Remote Delivery Teams:</strong> Distributed across African time zones</li>
+                <li><strong>AI Features:</strong> External LLM integrations and data flow risks</li>
+                <li><strong>Regulatory Context:</strong> NDPR, GDPR, local data residency requirements</li>
+            </ul>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="styled-table">
+                <tr>
+                    <th>Scenario</th>
+                    <th>Focus Area (Clause)</th>
+                    <th>Why Relevant</th>
+                </tr>
+                <tr>
+                    <td>ISMS Scope Definition</td>
+                    <td>Clause 4.3</td>
+                    <td>Multi-country delivery, cloud boundaries, remote staff</td>
+                </tr>
+                <tr>
+                    <td>Risk Assessment: AI Data Flows</td>
+                    <td>Clause 6.1 + A.5.23</td>
+                    <td>External LLM providers, third-party data processing</td>
+                </tr>
+                <tr>
+                    <td>Privileged Access & Break-Glass Accounts</td>
+                    <td>A.8.2, A.5.18</td>
+                    <td>Client environment access, emergency access procedures</td>
+                </tr>
+                <tr>
+                    <td>Leaver Access Revocation</td>
+                    <td>A.6.5</td>
+                    <td>Timely removal of access after staff exit</td>
+                </tr>
+                <tr>
+                    <td>Secure Development & Change Management</td>
+                    <td>A.8.25–A.8.32</td>
+                    <td>Continuous deployment pipelines and AI feature releases</td>
+                </tr>
+                <tr>
+                    <td>Incident Management & Notification</td>
+                    <td>A.5.24–A.5.28</td>
+                    <td>Regulatory and contractual notification obligations</td>
+                </tr>
+                <tr>
+                    <td>Cloud Shared Responsibility</td>
+                    <td>A.5.23 (Third Parties)</td>
+                    <td>Azure/AWS certification doesn't mean your ISMS is automatically compliant</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Risk Matrix Applied in Training</div>
+        <p class="section-desc">Participants worked with a clear 5×5 risk scoring matrix used both for risk assessment exercises and audit finding prioritisation:</p>
+        
+        <div class="table-wrapper">
+            <table class="styled-table">
+                <tr>
+                    <th>Score Range</th>
+                    <th>Risk Level</th>
+                    <th>Treatment Expectation</th>
+                </tr>
+                <tr>
+                    <td><span class="risk-level risk-low">1–4</span></td>
+                    <td><strong>LOW</strong></td>
+                    <td>Acceptable – monitor regularly</td>
+                </tr>
+                <tr>
+                    <td><span class="risk-level risk-medium">5–9</span></td>
+                    <td><strong>MEDIUM</strong></td>
+                    <td>Treat within 90 days</td>
+                </tr>
+                <tr>
+                    <td><span class="risk-level risk-high">10–14</span></td>
+                    <td><strong>HIGH</strong></td>
+                    <td>Treat within 45 days – Management review</td>
+                </tr>
+                <tr>
+                    <td><span class="risk-level risk-high">15–19</span></td>
+                    <td><strong>HIGH</strong></td>
+                    <td>Treat within 30 days – CISO + MD attention</td>
+                </tr>
+                <tr>
+                    <td><span class="risk-level risk-critical">20–25</span></td>
+                    <td><strong>CRITICAL</strong></td>
+                    <td>Treat within 7 days – CEO + Board attention</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="key-points">
+            <strong>Key Learning:</strong> Risk scoring is not academic—it directly informs remediation timelines and stakeholder escalation. Auditors must understand business impact to credibly advise on risk treatment priorities.
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Training Materials Developed</div>
+        <p class="section-desc">A complete, reusable suite of professional materials delivered with the training:</p>
+        
+        <div class="three-col-grid">
+            <div class="col-item">
+                <h5>Slide Deck (36 slides)</h5>
+                <p>Structured day-by-day with visual, professional design. Covers all core concepts from ISO 27001 clauses to audit techniques.</p>
+            </div>
+            <div class="col-item">
+                <h5>Facilitator's Speaker Script</h5>
+                <p>Detailed notes for every slide ensuring consistent, high-quality delivery. Notes include timing guidance and suggested talking points.</p>
+            </div>
+            <div class="col-item">
+                <h5>Custom Case Study Pack</h5>
+                <p>Nexus Africa Technologies scenarios built specifically around Kropmann and Seamless Technologies operational realities.</p>
+            </div>
+            <div class="col-item">
+                <h5>Professional Audit Plan Template</h5>
+                <p>Ready-to-use template tailored to both organisations. Includes risk-based sampling, evidence checklists, and Stage 1/2 guidance.</p>
+            </div>
+            <div class="col-item">
+                <h5>Specimen Stage 2 Audit Report</h5>
+                <p>Complete sample report with realistic findings, nonconformity examples (Major/Minor), risk scoring, and executive summary format.</p>
+            </div>
+            <div class="col-item">
+                <h5>Risk Matrix & Scoring Guide</h5>
+                <p>Organisation-aligned 5×5 matrix with scoring rationale and treatment timelines for audit finding classification.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Key Competencies Developed</div>
+        
+        <div class="highlight-box">
+            <p><strong>By the end of Day 3, participants were competent to:</strong></p>
+            <ul>
+                <li>Interpret ISO 27001 requirements from an auditor's perspective</li>
+                <li>Apply ISO 19011 principles and processes in audit planning and execution</li>
+                <li>Plan a risk-based ISMS audit programme with realistic scope and sampling</li>
+                <li>Conduct effective interviews and gather objective evidence (not assumptions)</li>
+                <li>Write clear, factual, and actionable nonconformities (Criteria–Finding–Evidence format)</li>
+                <li>Distinguish between Major and Minor nonconformities based on risk and impact</li>
+                <li>Lead opening and closing meetings professionally</li>
+                <li>Link audit findings to business risk and regulatory obligations</li>
+                <li>Manage an audit team and assign roles effectively</li>
+                <li>Prepare for formal Lead Auditor certification examination with stronger practical grounding</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Why This Approach Worked</div>
+        
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--green);">4</div>
+                <div class="stat-label">Small Group Size</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--blue);">60%</div>
+                <div class="stat-label">Practical Application</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--amber);">3</div>
+                <div class="stat-label">Role-Play Scenarios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" style="color: var(--green);">100%</div>
+                <div class="stat-label">Context-Aligned</div>
+            </div>
+        </div>
+        
+        <div class="highlight-box">
+            <h4>Success Factors</h4>
+            <ul>
+                <li><strong>Small group (4 people):</strong> Enabled deep coaching, meaningful role-play and individual feedback</li>
+                <li><strong>Organisation-specific scenarios:</strong> Every exercise felt relevant to their real audit challenges</li>
+                <li><strong>Progressive curriculum design:</strong> Knowledge → Planning → Execution (theory to practice pipeline)</li>
+                <li><strong>Heavy emphasis on Day 3 practice:</strong> Role-plays, nonconformity writing exercises built real confidence before formal exams</li>
+                <li><strong>Exam awareness woven throughout:</strong> Learning served both competence development and certification goals</li>
+                <li><strong>Risk-based thinking reinforced:</strong> Every concept tied back to business impact and CISO priorities</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Closing Thought</div>
+        
+        <div class="highlight-box" style="border-left: 4px solid var(--green);">
+            <p><em>Effective Lead Auditor capability is not built by listening alone. It is built by practising—asking better questions, listening more carefully, demanding evidence, and writing findings that actually help the organisation improve.</em></p>
+            <p style="margin-top: 12px;"><strong>This 3-day engagement gave the Kropmann and Seamless Technologies participants a structured, realistic environment to develop exactly those skills, using standards (ISO 27001:2022 and ISO 19011:2018) and scenarios that reflect the work they do every day.</strong></p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">Standards & Frameworks Referenced</div>
+        <ul style="margin-left: 20px; line-height: 1.8;">
+            <li><strong>ISO/IEC 27001:2022</strong> – Information security management system requirements</li>
+            <li><strong>ISO 19011:2018</strong> – Auditing management systems (guidelines)</li>
+            <li><strong>NIST CSF:</strong> Cybersecurity Framework alignment for risk context</li>
+            <li><strong>NDPR:</strong> Nigeria Data Protection Regulation (local regulatory context)</li>
+            <li><strong>GDPR:</strong> General Data Protection Regulation (international data flows)</li>
+        </ul>
+    </div>
+    
+    <footer>
+        <p>Training engagement completed with focus on competence development, practical application, and preparation for formal ISO 27001 Lead Auditor certification.</p>
+        <p style="margin-top: 12px;">© Oluwatobi Aladetuyi 2026 · <a href="index.html">← Back to portfolio</a></p>
+    </footer>
+    
+</div>
+</body>
+</html>
